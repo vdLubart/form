@@ -1,0 +1,27 @@
+{
+    "name": "lubart/form",
+    "description": "Helps to build a standard form with any amount of elements, specify their values, labels or specific parameters",
+    "authors": [
+        {
+            "name": "Viacheslav Dymarchuk",
+            "email": "sl.lubart@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+    	"laravel/framework": "^5.1.0",
+        "laravelcollective/html": "^5.1.0"
+	},
+	"autoload": {
+		"psr-4": {
+  			"Lubart\\Form\\": "src"
+		}
+	},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Lubart\\Form\\FormServiceProvider"
+            ]
+        }
+    }
+}

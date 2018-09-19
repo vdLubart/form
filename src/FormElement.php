@@ -1,0 +1,227 @@
+<?php
+
+namespace Lubart\Form;
+
+class FormElement {
+    
+    /**
+     * Element name
+     * 
+     * @var string $name
+     */
+    private $name = 'submit';
+    
+    /**
+     * Element label
+     * 
+     * @var string $label
+     */
+    private $label = '';
+    
+    /**
+     * Element type
+     * 
+     * @var string $type
+     */
+    private $type = 'text';
+    
+    /**
+     * Element value
+     * 
+     * @var string|array $value 
+     */
+    private $value;
+    
+    /**
+     * Options for select, checkbox or radiobox elements
+     * 
+     * @var array $options
+     */
+    private $options = [];
+    
+    /**
+     * Additional element parameters
+     * 
+     * @var array $parameters
+     */
+    private $parameters = [];
+    
+    /**
+     * Show is checkbox or radiobox checked
+     * 
+     * @var boolean $checked
+     */
+    private $checked = false;
+    
+    /**
+     * Show is field is obligatory
+     * 
+     * @var boolean $isObligatory
+     */
+    protected $isObligatory = true;
+
+	/**
+	 * Form related to the element
+	 *
+	 * @var Form $form
+	 */
+    protected $form;
+
+    private $availableTypes = ['text', 'textarea', 'password', 'email', 'file', 'checkbox', 'radio', 'number', 'select', 'selectRange', 'selectMonth', 'hidden', 'button', 'submit', 'html', 'date'];
+
+	/**
+	 * Define form element
+	 *
+	 * @param $name
+	 * @param array $arguments
+	 * @return FormElement
+	 */
+	public static function __callStatic($name, $arguments = []) {
+		$arguments[0]['type'] = $name;
+		return new FormElement($arguments[0]);
+	}
+    
+    public function __construct(array $input = []) {
+        $this->setType($input['type']);
+        foreach($input as $key=>$val){
+            if(method_exists($this, $key)){
+                $this->{'set'.ucfirst($key)}($val);
+            }
+            else{
+            	$this->setParameters($val, $key);
+            }
+        }
+    }
+    
+    public function name() {
+        return $this->name;
+    }
+    
+    public function setName($name) {
+        $this->name = $name;
+        
+        return $this->name;
+    }
+    
+    public function label() {
+        return $this->label;
+    }
+    
+    public function setLabel($label) {
+        $this->label = $label;
+        
+        return $this->label;
+    }
+    
+    /**
+     * Return element type
+     * 
+     * @return string
+     */
+    public function type() {
+        return $this->type;
+    }
+    
+    public function setType($type) {
+        if(in_array($type, $this->availableTypes)){
+            $this->type = $type;
+        }
+        
+        return $this->type;
+    }
+    
+    public function value() {
+        return $this->value;
+    }
+    
+    public function setValue($value) {
+        return $this->value = $value;
+    }
+    
+    public function options() {
+        return $this->options;
+    }
+    
+    public function setOptions($option, $key=null) {
+        if(!is_null($key)){
+            $this->options[$key] = $option;
+        }
+        else{
+            $this->options = $option;
+        }
+                
+        return $this->options;
+    }
+    
+    public function parameters() {
+        return $this->parameters;
+    }
+    
+    public function setParameters($parameter, $key) {
+        $this->parameters[$key] = $parameter;
+                
+        return $this->parameters;
+    }
+    
+    public function setCheck($check) {
+        if(in_array($this->type, ['checkbox', 'radio'])){
+            $this->checked = (boolean)$check;
+        }
+        
+        return $this->checked;
+    }
+    
+    public function check() {
+        return $this->checked;
+    }
+    
+    /**
+     * Make field not obligatory to use
+     * 
+     * @return $this
+     */
+    public function notObligatory() {
+        $this->isObligatory = false;
+        
+        return $this;
+    }
+    
+    /**
+     * Make field obligatory to use
+     * 
+     * @return $this
+     */
+    public function obligatory() {
+        $this->isObligatory = true;
+        
+        return $this;
+    }
+    
+    /**
+     * Show is field obligatory to use
+     * 
+     * @return boolean
+     */
+    public function isObligatory() {
+        return $this->isObligatory;
+    }
+
+	/**
+	 * Set related form
+	 *
+	 * @param Form $form
+	 * @return Form
+	 */
+	public function setForm(Form $form) {
+		return $this->form = $form;
+    }
+
+	/**
+	 * Get related form
+	 *
+	 * @return Form
+	 */
+	public function form() {
+		return $this->form;
+    }
+}
