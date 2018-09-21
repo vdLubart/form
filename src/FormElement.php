@@ -100,7 +100,7 @@ class FormElement {
     public function setName($name) {
         $this->name = $name;
         
-        return $this->name;
+        return $this;
     }
     
     public function label() {
@@ -110,7 +110,7 @@ class FormElement {
     public function setLabel($label) {
         $this->label = $label;
         
-        return $this->label;
+        return $this;
     }
     
     /**
@@ -127,7 +127,7 @@ class FormElement {
             $this->type = $type;
         }
         
-        return $this->type;
+        return $this;
     }
     
     public function value() {
@@ -135,7 +135,9 @@ class FormElement {
     }
     
     public function setValue($value) {
-        return $this->value = $value;
+        $this->value = $value;
+
+        return $this;
     }
     
     public function options() {
@@ -150,7 +152,7 @@ class FormElement {
             $this->options = $option;
         }
                 
-        return $this->options;
+        return $this;
     }
     
     public function parameters() {
@@ -160,7 +162,13 @@ class FormElement {
     public function setParameters($parameter, $key) {
         $this->parameters[$key] = $parameter;
                 
-        return $this->parameters;
+        return $this;
+    }
+
+	public function removeParameter($key) {
+		unset($this->parameters[$key]);
+
+		return $this;
     }
     
     public function setCheck($check) {
@@ -168,7 +176,7 @@ class FormElement {
             $this->checked = (boolean)$check;
         }
         
-        return $this->checked;
+        return $this;
     }
     
     public function check() {
@@ -213,7 +221,9 @@ class FormElement {
 	 * @return Form
 	 */
 	public function setForm(Form $form) {
-		return $this->form = $form;
+		$this->form = $form;
+
+		return $this;
     }
 
 	/**

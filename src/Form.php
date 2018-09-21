@@ -153,7 +153,7 @@ class Form {
     public function setAdvanced($val) {
         $this->isAdvanced = $val;
         
-        return $this->isAdvanced;
+        return $this;
     }
     
     /**
@@ -210,7 +210,7 @@ class Form {
     public function setAction($uri) {
         $this->action = $uri;
         
-        return $this->action;
+        return $this;
     }
 
 	/**
@@ -222,7 +222,7 @@ class Form {
 	public function setMethod($method) {
 		$this->method = $method;
 
-		return $this->method;
+		return $this;
 	}
     
     /**
@@ -240,7 +240,9 @@ class Form {
      * @return boolean
      */
     public function open() {
-        return $this->isOpen = true;
+        $this->isOpen = true;
+
+        return $this;
     }
     
     /**
@@ -249,11 +251,15 @@ class Form {
      * @return boolean
      */
     public function close() {
-        return $this->isOpen = false;
+        $this->isOpen = false;
+
+        return $this;
     }
 
 	public function setID($id) {
-		return $this->id = $id;
+		$this->id = $id;
+
+		return $this;
     }
 
 	public function id() {
@@ -267,7 +273,9 @@ class Form {
 	 * @return string
 	 */
 	public function setErrorBag($name) {
-		return $this->errorBag = $name;
+		$this->errorBag = $name;
+
+		return $this;
 	}
 
 	public function errorBag() {
@@ -281,7 +289,9 @@ class Form {
 	 * @return mixed
 	 */
 	public function setView($view) {
-		return $this->view = $view;
+		$this->view = $view;
+
+		return $this;
 	}
 
 	/**
