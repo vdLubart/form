@@ -14,11 +14,11 @@ class Form {
     private $elements = [];
     
     /**
-     * Element names in the block. Helps identify element
+     * Element names in the form. Helps identify element
      * 
      * @var array $names
      */
-    private $names = [];
+    protected $names = [];
     
     /**
      * Form action URI
@@ -32,7 +32,7 @@ class Form {
      * 
      * @var boolean $files 
      */
-    private $files = false;
+    protected $files = false;
     
     /**
      * Form method
@@ -41,13 +41,6 @@ class Form {
      */
     private $method = "POST";
 
-	/**
-	 * Shows is form has advanced parameters
-	 *
-	 * @var boolean $isOpen
-	 */
-	protected $isAdvanced = false;
-    
     /**
      * Shows is form visible
      * 
@@ -55,25 +48,57 @@ class Form {
      */
     protected $isOpen = false;
 
-	/**
-	 * Form ID
-	 * @var string $form
-	 */
+    /**
+     * Form ID
+     * @var string $form
+     */
     private $id;
 
-	/**
-	 * Error bag name used by validator
-	 *
-	 * @var string $errorBag
-	 */
-	protected $errorBag = 'default';
+    /**
+     * Error bag name used by validator
+     *
+     * @var string $errorBag
+     */
+    protected $errorBag = 'default';
 
-	/**
-	 * View blade template
-	 *
-	 * @var string $view
-	 */
-	protected $view = 'lubart.form::form';
+    /**
+     * View blade template
+     *
+     * @var string $view
+     */
+    protected $view = 'lubart.form::form';
+    
+    /**
+     * Shows is JS logic used
+     * 
+     * @var boolean $isJS
+     */
+    protected $isJS = false;
+    
+    /**
+     * Path to JS file with related logic
+     * 
+     * @var string  $jsFile
+     */
+    protected $jsFile = null;
+
+
+    /**
+     * JS code related to the form
+     * 
+     * @var String $js
+     */
+    protected $js = null;
+
+
+    /**
+     * Form type. Available values are 'setup', 'settings', 'public'
+     * 
+     * @var string $type 
+     */
+    protected $type = 'settings';
+    
+    protected $groups = [];
 
     public function __construct($uri = "", $method = 'POST') {
         $this->setAction($uri);
@@ -88,7 +113,7 @@ class Form {
      * @throws \Exception
      */
     public function add(FormElement $element) {
-    	$element->setForm($this);
+        $element->setForm($this);
 
         if(!in_array($element->name(), $this->names)){
             $this->elements[$element->name()] = $element;
@@ -106,6 +131,28 @@ class Form {
         }
         
         return $this;
+    }
+    
+    public function addGroup(FormGroup $group) {
+        $group->setForm($this);
+        
+        $this->groups[$group->name()] = $group;
+        
+        foreach($group->getElements() as $element){
+            $this->addName($element);
+        }
+        
+        return $this;
+    }
+    
+    public function removeGroup($name){
+        foreach($this->groups[$name]->getElements() as $element){
+            if (($key = array_search($element->name(), $this->names)) !== false) {
+                unset($this->names[$element->name()]);
+            }
+        }
+        
+        unset($this->groups[$name]);
     }
     
     /**
@@ -128,9 +175,9 @@ class Form {
             unset($this->elements[$name]);
         }
 
-		if (($key = array_search($name, $this->names)) !== false) {
-			unset($this->names[$key]);
-		}
+        if (($key = array_search($name, $this->names)) !== false) {
+            unset($this->names[$key]);
+        }
         
         return $this;
     }
@@ -213,17 +260,17 @@ class Form {
         return $this;
     }
 
-	/**
-	 * Set action URI of the form
-	 *
-	 * @param string $method
-	 * @return string
-	 */
-	public function setMethod($method) {
-		$this->method = $method;
+    /**
+     * Set action URI of the form
+     *
+     * @param string $method
+     * @return string
+     */
+    public function setMethod($method) {
+            $this->method = $method;
 
-		return $this;
-	}
+            return $this;
+    }
     
     /**
      * Check is form visible
@@ -255,55 +302,153 @@ class Form {
 
         return $this;
     }
-
-	public function setID($id) {
-		$this->id = $id;
-
-		return $this;
+    
+    /**
+     * Include JS losic to the form.
+     * 
+     * @param string $filePath pathe to the JS file
+     */
+    public function useJSFile($filePath) {
+        $this->isJS = true;
+        $this->jsFile = $filePath;
+    }
+    
+    /**
+     * Return is JS logic used. JS file can be found with jsFile() method
+     * 
+     * @return boolean
+     */
+    public function isJS() {
+        return $this->isJS;
+    }
+    
+    /**
+     * Return path to the JS file with related logic
+     * 
+     * @return string
+     */
+    public function jsFile(){
+        return $this->jsFile;
     }
 
-	public function id() {
-		return $this->id;
+        /**
+     * Return JS code related to the form
+     * 
+     * @return type
+     */
+    public function js(){
+        return $this->js;
     }
 
-	/**
-	 * Set error bag name
-	 *
-	 * @param string $name
-	 * @return string
-	 */
-	public function setErrorBag($name) {
-		$this->errorBag = $name;
+    /**
+     * Set form type
+     * 
+     * @param string $type
+     * @return string
+     */
+    public function setType($type) {
+        return $this->type = $type;
+    }
+    
+    /**
+     * Return form type
+     * 
+     * @return string
+     */
+    public function type() {
+        return $this->type;
+    }
 
-		return $this;
-	}
+    public function setID($id) {
+        $this->id = $id;
 
-	public function errorBag() {
-		return $this->errorBag;
-	}
+        return $this;
+    }
 
-	/**
-	 * Set custom view blade template
-	 *
-	 * @param $view
-	 * @return mixed
-	 */
-	public function setView($view) {
-		$this->view = $view;
+    public function id() {
+        return $this->id;
+    }
 
-		return $this;
-	}
+    /**
+     * Set error bag name
+     *
+     * @param string $name
+     * @return string
+     */
+    public function setErrorBag($name) {
+        $this->errorBag = $name;
 
-	/**
-	 * Get blade template name
-	 *
-	 * @return string
-	 */
-	public function view() {
-		return $this->view;
-	}
+        return $this;
+    }
 
-	public function includeView() {
-		return View::make($this->view, ['form'=>$this]);
-	}
+    public function errorBag() {
+        return $this->errorBag;
+    }
+
+    /**
+     * Set custom view blade template
+     *
+     * @param $view
+     * @return mixed
+     */
+    public function setView($view) {
+        $this->view = $view;
+
+        return $this;
+    }
+
+    /**
+     * Get blade template name
+     *
+     * @return string
+     */
+    public function view() {
+        return $this->view;
+    }
+    
+    /**
+     * Render form view
+     * 
+     * @return type
+     */
+    public function render() {
+        return View::make($this->view, ['form'=>$this]);
+    }
+    
+    public function groups(){
+        return $this->groups;
+    }
+    
+    public function group($name){
+        return $this->groups[$name];
+    }
+    
+    public function applyJS($js){
+        if(is_null($this->js)){
+            $this->js = $js;
+        }
+        else{
+            $this->js .= $js;
+        }
+        
+        return $this;
+    }
+    
+    public function names(){
+        return $this->names;
+    }
+    
+    public function addName($element){
+        if (!in_array($element->name(), $this->names)) {
+            $this->names[] = $element->name();
+        } elseif (!in_array($element->type(), ['checkbox', 'radio'])) {
+            throw new \Exception("Element with name '" . $element->name() . "' already in use");
+        }
+
+        if ($element->type() == "file") {
+            $this->files = true;
+        }
+        
+        return;
+    }
 }

@@ -13,7 +13,7 @@ class FormServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-    	$this->loadViewsFrom(__DIR__.'/views', 'lubart.form');
+        $this->loadViewsFrom(__DIR__.'/views', 'lubart.form');
     }
 
     /**

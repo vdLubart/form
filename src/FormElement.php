@@ -2,6 +2,8 @@
 
 namespace Lubart\Form;
 
+use Illuminate\Support\Facades\View;
+
 class FormElement {
     
     /**
@@ -60,26 +62,33 @@ class FormElement {
      */
     protected $isObligatory = true;
 
-	/**
-	 * Form related to the element
-	 *
-	 * @var Form $form
-	 */
+    /**
+     * Form related to the element
+     *
+     * @var Form $form
+     */
     protected $form;
+    
+    /**
+     * Group related to the element
+     * 
+     * @var FormGroup $group
+     */
+    protected $group = null;
 
-    private $availableTypes = ['text', 'textarea', 'password', 'email', 'file', 'checkbox', 'radio', 'number', 'select', 'selectRange', 'selectMonth', 'hidden', 'button', 'submit', 'html', 'date'];
+    private $availableTypes = ['text', 'textarea', 'password', 'email', 'file', 'checkbox', 'radio', 'number', 'select', 'selectRange', 'selectMonth', 'hidden', 'button', 'submit', 'html', 'date', 'time'];
 
-	/**
-	 * Define form element
-	 *
-	 * @param $name
-	 * @param array $arguments
-	 * @return FormElement
-	 */
-	public static function __callStatic($name, $arguments = []) {
-		$arguments[0]['type'] = $name;
-		return new FormElement($arguments[0]);
-	}
+    /**
+     * Define form element
+     *
+     * @param $name
+     * @param array $arguments
+     * @return FormElement
+     */
+    public static function __callStatic($name, $arguments = []) {
+        $arguments[0]['type'] = $name;
+        return new FormElement($arguments[0]);
+    }
     
     public function __construct(array $input = []) {
         $this->setType($input['type']);
@@ -88,7 +97,7 @@ class FormElement {
                 $this->{'set'.ucfirst($key)}($val);
             }
             else{
-            	$this->setParameters($val, $key);
+                $this->setParameters($val, $key);
             }
         }
     }
@@ -165,10 +174,10 @@ class FormElement {
         return $this;
     }
 
-	public function removeParameter($key) {
-		unset($this->parameters[$key]);
+    public function removeParameter($key) {
+        unset($this->parameters[$key]);
 
-		return $this;
+        return $this;
     }
     
     public function setCheck($check) {
@@ -214,24 +223,54 @@ class FormElement {
         return $this->isObligatory;
     }
 
-	/**
-	 * Set related form
-	 *
-	 * @param Form $form
-	 * @return Form
-	 */
-	public function setForm(Form $form) {
-		$this->form = $form;
+    /**
+     * Set related form
+     *
+     * @param Form $form
+     * @return Form
+     */
+    public function setForm(Form $form) {
+        $this->form = $form;
 
-		return $this;
+        return $this;
     }
 
-	/**
-	 * Get related form
-	 *
-	 * @return Form
-	 */
-	public function form() {
-		return $this->form;
+    /**
+     * Get related form
+     *
+     * @return Form
+     */
+    public function form() {
+        return $this->form;
+    }
+    
+    /**
+     * Set related group
+     *
+     * @param FormGroup $group
+     * @return FormGroup
+     */
+    public function setGroup(FormGroup $group) {
+        $this->group = $group;
+
+        return $this;
+    }
+
+    /**
+     * Get related group
+     *
+     * @return FormGroup
+     */
+    public function group() {
+        return $this->group;
+    }
+    
+    /**
+     * Render element html view
+     * 
+     * @return type
+     */
+    public function render() {
+        return View::make('lubart.form::element', ['element'=>$this]);
     }
 }

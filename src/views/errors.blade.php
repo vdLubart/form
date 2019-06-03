@@ -1,9 +1,6 @@
 @if(isset($errors))
-
     <?php
-
     $errorBag = $errors->{$form->errorBag()};
-
     ?>
     @if($errorBag->any())
         <div class="alert alert-danger">
