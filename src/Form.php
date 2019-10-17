@@ -43,8 +43,8 @@ class Form {
 
     /**
      * Shows is form visible
-     * 
-     * @var boolean $isOpen 
+     *
+     * @var boolean $isOpen
      */
     protected $isOpen = false;
 
@@ -178,27 +178,6 @@ class Form {
         if (($key = array_search($name, $this->names)) !== false) {
             unset($this->names[$key]);
         }
-        
-        return $this;
-    }
-    
-    /**
-     * Show is advanced search used
-     * 
-     * @return boolean
-     */
-    public function isAdvanced() {
-        return $this->isAdvanced;
-    }
-    
-    /**
-     * Set value for advanced search
-     * 
-     * @param boolean $val
-     * @return boolean
-     */
-    public function setAdvanced($val) {
-        $this->isAdvanced = $val;
         
         return $this;
     }
