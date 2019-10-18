@@ -6,13 +6,13 @@
     @include('lubart.form::group', ['group'=>$group])
 @endforeach
 
-@foreach($form->getElements() as $key=>$element)
+@foreach($form->elements() as $key=>$element)
     @include('lubart.form::element')
 @endforeach
 
 {!! Form::close() !!}
 
-@if($form->isJS())
+@if(!is_null($form->jsFile()))
 <script src='{{ $form->jsFile() }}' />
 @endif
 

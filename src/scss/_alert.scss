@@ -1,0 +1,16 @@
+.#{$namespace}__ {
+    &alert{
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        font-weight: 400;
+        border-left-width: 4px;
+
+        &-danger {
+            border-color: #a94442;
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    }
+}

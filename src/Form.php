@@ -2,7 +2,9 @@
 
 namespace Lubart\Form;
 
-use Illuminate\Support\Facades\View;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
+use Exception;
 
 class Form {
     
@@ -42,15 +44,8 @@ class Form {
     private $method = "POST";
 
     /**
-     * Shows is form visible
-     *
-     * @var boolean $isOpen
-     */
-    protected $isOpen = false;
-
-    /**
      * Form ID
-     * @var string $form
+     * @var string $id
      */
     private $id;
 
@@ -69,13 +64,6 @@ class Form {
     protected $view = 'lubart.form::form';
     
     /**
-     * Shows is JS logic used
-     * 
-     * @var boolean $isJS
-     */
-    protected $isJS = false;
-    
-    /**
      * Path to JS file with related logic
      * 
      * @var string  $jsFile
@@ -92,14 +80,25 @@ class Form {
 
 
     /**
-     * Form type. Available values are 'setup', 'settings', 'public'
-     * 
-     * @var string $type 
+     * List of available in the form groups
+     *
+     * @var array $groups
      */
-    protected $type = 'settings';
-    
     protected $groups = [];
 
+    /**
+     * Sing which mark form element as obligation
+     *
+     * @var string $obligationMark
+     */
+    protected $obligationMark = '*';
+
+    /**
+     * Form constructor.
+     *
+     * @param string $uri form action
+     * @param string $method form method
+     */
     public function __construct($uri = "", $method = 'POST') {
         $this->setAction($uri);
         $this->setMethod($method);
@@ -109,8 +108,8 @@ class Form {
      * Add new element to the form
      * 
      * @param FormElement $element new element
-     * @return $this
-     * @throws \Exception
+     * @return Form
+     * @throws Exception
      */
     public function add(FormElement $element) {
         $element->setForm($this);
@@ -123,7 +122,7 @@ class Form {
             $this->elements[$element->name().'_'. $this->count()] = $element;
         }
         else{
-            throw new \Exception("Element with name '".$element->name()."' already in use");
+            throw new Exception("Element with name '".$element->name()."' already in use");
         }
         
         if($element->type() == "file"){
@@ -132,27 +131,42 @@ class Form {
         
         return $this;
     }
-    
+
+    /**
+     * Add created group to the form
+     *
+     * @param FormGroup $group
+     * @return $this
+     * @throws Exception
+     */
     public function addGroup(FormGroup $group) {
-        $group->setForm($this);
+        $group->form = $this;
         
         $this->groups[$group->name()] = $group;
         
-        foreach($group->getElements() as $element){
+        foreach($group->elements() as $element){
             $this->addName($element);
         }
         
         return $this;
     }
-    
+
+    /**
+     * Remove specific group from the form
+     *
+     * @param $name
+     * @return Form
+     */
     public function removeGroup($name){
-        foreach($this->groups[$name]->getElements() as $element){
+        foreach($this->groups[$name]->elements() as $element){
             if (($key = array_search($element->name(), $this->names)) !== false) {
                 unset($this->names[$element->name()]);
             }
         }
         
         unset($this->groups[$name]);
+
+        return $this;
     }
     
     /**
@@ -161,16 +175,22 @@ class Form {
      * @return int
      */
     public function count() {
-        return count($this->elements);
+        $count = count($this->elements);
+
+        foreach($this->groups as $group){
+            $count += $group->count();
+        }
+
+        return $count;
     }
     
     /**
-     * Remove element from the form
+     * Remove element from the form by the element name
      * 
      * @param string $name element name
      * @return $this
      */
-    public function remove($name) {
+    public function removeElement($name) {
         if(isset($this->elements[$name])){
             unset($this->elements[$name]);
         }
@@ -181,22 +201,54 @@ class Form {
         
         return $this;
     }
+
+    /**
+     * Remove element from the form
+     *
+     * @param FormElement $element
+     * @return Form
+     */
+    public function remove(FormElement $element) {
+        return $this->removeElement($element->name());
+    }
     
     /**
      * Return all elements in block
-     * 
+     *
+     * @deprecated use elements() instead
      * @return array
      */
     public function getElements() {
+        return $this->elements();
+    }
+
+    /**
+     * Return all elements in block
+     *
+     * @return array
+     */
+    public function elements() {
         return $this->elements;
     }
     
     /**
      * Return block element
-     * 
+     *
+     * @deprecated use element($name) instead
+     * @param string $name element name
      * @return FormElement
      */
     public function getElement($name) {
+        return isset($this->elements[$name])?$this->elements[$name]:null;
+    }
+
+    /**
+     * Return form element by the name
+     *
+     * @param string $name element name
+     * @return FormElement
+     */
+    public function element($name) {
         return isset($this->elements[$name])?$this->elements[$name]:null;
     }
     
@@ -252,53 +304,12 @@ class Form {
     }
     
     /**
-     * Check is form visible
-     * 
-     * @return boolean
-     */
-    public function isOpen() {
-        return $this->isOpen;
-    }
-    
-    /**
-     * Make form visible
-     * 
-     * @return boolean
-     */
-    public function open() {
-        $this->isOpen = true;
-
-        return $this;
-    }
-    
-    /**
-     * Make form hidden
-     * 
-     * @return boolean
-     */
-    public function close() {
-        $this->isOpen = false;
-
-        return $this;
-    }
-    
-    /**
-     * Include JS losic to the form.
+     * Include JS logic to the form.
      * 
      * @param string $filePath pathe to the JS file
      */
     public function useJSFile($filePath) {
-        $this->isJS = true;
         $this->jsFile = $filePath;
-    }
-    
-    /**
-     * Return is JS logic used. JS file can be found with jsFile() method
-     * 
-     * @return boolean
-     */
-    public function isJS() {
-        return $this->isJS;
     }
     
     /**
@@ -313,37 +324,29 @@ class Form {
         /**
      * Return JS code related to the form
      * 
-     * @return type
+     * @return boolean
      */
     public function js(){
         return $this->js;
     }
 
     /**
-     * Set form type
-     * 
-     * @param string $type
-     * @return string
+     * Specify id for the form
+     *
+     * @param $id
+     * @return Form
      */
-    public function setType($type) {
-        return $this->type = $type;
-    }
-    
-    /**
-     * Return form type
-     * 
-     * @return string
-     */
-    public function type() {
-        return $this->type;
-    }
-
     public function setID($id) {
         $this->id = $id;
 
         return $this;
     }
 
+    /**
+     * Return form id
+     *
+     * @return string
+     */
     public function id() {
         return $this->id;
     }
@@ -360,6 +363,11 @@ class Form {
         return $this;
     }
 
+    /**
+     * Return error bag name
+     *
+     * @return string
+     */
     public function errorBag() {
         return $this->errorBag;
     }
@@ -388,20 +396,37 @@ class Form {
     /**
      * Render form view
      * 
-     * @return type
+     * @return Factory|View
      */
     public function render() {
-        return View::make($this->view, ['form'=>$this]);
+        return view($this->view, ['form'=>$this]);
     }
-    
+
+    /**
+     * Return list of form groups
+     *
+     * @return array
+     */
     public function groups(){
         return $this->groups;
     }
-    
+
+    /**
+     * Return specific form group by the name
+     *
+     * @param string $name group name
+     * @return FormGroup
+     */
     public function group($name){
         return $this->groups[$name];
     }
-    
+
+    /**
+     * Apply specified JavaScript code to rendered form
+     *
+     * @param string $js JavaScript code
+     * @return Form
+     */
     public function applyJS($js){
         if(is_null($this->js)){
             $this->js = $js;
@@ -409,25 +434,58 @@ class Form {
         else{
             $this->js .= $js;
         }
-        
+
         return $this;
     }
-    
+
+    /**
+     * List of used names in the form
+     *
+     * @return array
+     */
     public function names(){
         return $this->names;
     }
-    
-    public function addName($element){
+
+    /**
+     * Note element name and control if it is unique
+     *
+     * @param FormElement $element
+     * @throws Exception
+     * @return Form
+     */
+    public function addName(FormElement $element){
         if (!in_array($element->name(), $this->names)) {
             $this->names[] = $element->name();
         } elseif (!in_array($element->type(), ['checkbox', 'radio'])) {
-            throw new \Exception("Element with name '" . $element->name() . "' already in use");
+            throw new Exception("Element with name '" . $element->name() . "' already in use");
         }
 
         if ($element->type() == "file") {
             $this->files = true;
         }
         
-        return;
+        return $this;
+    }
+
+    /**
+     * Return obligation mark for the form element
+     *
+     * @return string
+     */
+    public function obligationMark() {
+        return $this->obligationMark;
+    }
+
+    /**
+     * Set obligation mark for the form element
+     *
+     * @param $mark
+     * @return Form
+     */
+    public function setObligationMark($mark) {
+        $this->obligationMark = $mark;
+
+        return $this;
     }
 }
