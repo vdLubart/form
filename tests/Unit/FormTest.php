@@ -324,4 +324,28 @@ class FormTest extends TestCase {
 
         $this->assertContains('<span class="lubart-form__obligatoryMark">#</span>', $element->render()->render());
     }
+
+    /** @test - it returns form data in json format */
+    function it_returns_form_data_in_json_format() {
+        $form = new Form($url = $this->faker->url);
+
+        $form->add(FormElement::text(['name' => $textName = $this->faker->word]));
+
+        $group = new FormGroup($groupName = $this->faker->word, $groupLabel = $this->faker->word);
+
+        $group->add(FormElement::email(['name' => $emailName = $this->faker->word]));
+
+        $form->addGroup($group);
+
+        $json = json_decode($form->toJson());
+
+        $this->assertEquals($url, $json->action);
+        $this->assertCount(1, $json->groups);
+        $this->assertEquals($groupName, $json->groups[0]->name);
+        $this->assertEquals($groupLabel, $json->groups[0]->label);
+        $this->assertCount(1, $json->groups[0]->elements);
+        $this->assertEquals($emailName, $json->groups[0]->elements[0]->name);
+        $this->assertCount(1, $json->unGrouppedElements);
+        $this->assertEquals($textName, $json->unGrouppedElements[0]->name);
+    }
 }

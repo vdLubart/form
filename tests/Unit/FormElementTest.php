@@ -139,6 +139,29 @@ class FormElementTest extends TestCase {
     }
 
     /** @test */
+    function it_renders_group_of_checkbox_elements(){
+        $element = FormElement::checkbox([
+            'name' => $name = $this->faker->word,
+            'label' => $label = $this->faker->sentence,
+            'value' => $value = $this->faker->word,
+            'options' => [
+                '1' => $value1 = $this->faker->word,
+                '2' => $value2 = $this->faker->word,
+                $value => $selectedValue = $this->faker->word
+            ]
+        ]);
+
+        $this->assertContains('<input name="'.$name.'" type="checkbox" value="1">', $element->render()->render());
+        $this->assertContains($value1, $element->render()->render());
+        $this->assertContains('<input name="'.$name.'" type="checkbox" value="2">', $element->render()->render());
+        $this->assertContains($value2, $element->render()->render());
+        $this->assertContains('<input checked="checked" name="'.$name.'" type="checkbox" value="'.$value.'">', $element->render()->render());
+        $this->assertContains($selectedValue, $element->render()->render());
+        $this->assertContains('<label for="'.$name.'">', $element->render()->render());
+        $this->assertContains($label, $element->render()->render());
+    }
+
+    /** @test */
     function it_renders_radio_element(){
         $element = FormElement::radio([
             'name' => $name = $this->faker->word,
@@ -148,6 +171,29 @@ class FormElementTest extends TestCase {
 
         $this->assertContains('<input name="'.$name.'" type="radio" value="'.$value.'">', $element->render()->render());
         $this->assertNotContains('<label for="'.$name.'">'.$label.'</label>', $element->render()->render());
+        $this->assertContains($label, $element->render()->render());
+    }
+
+    /** @test */
+    function it_renders_group_of_radio_elements(){
+        $element = FormElement::radio([
+            'name' => $name = $this->faker->word,
+            'label' => $label = $this->faker->sentence,
+            'value' => $value = $this->faker->word,
+            'options' => [
+                '1' => $value1 = $this->faker->word,
+                '2' => $value2 = $this->faker->word,
+                $value => $selectedValue = $this->faker->word
+            ]
+        ]);
+
+        $this->assertContains('<input name="'.$name.'" type="radio" value="1">', $element->render()->render());
+        $this->assertContains($value1, $element->render()->render());
+        $this->assertContains('<input name="'.$name.'" type="radio" value="2">', $element->render()->render());
+        $this->assertContains($value2, $element->render()->render());
+        $this->assertContains('<input checked="checked" name="'.$name.'" type="radio" value="'.$value.'">', $element->render()->render());
+        $this->assertContains($selectedValue, $element->render()->render());
+        $this->assertContains('<label for="'.$name.'">', $element->render()->render());
         $this->assertContains($label, $element->render()->render());
     }
 

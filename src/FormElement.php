@@ -237,7 +237,7 @@ class FormElement {
      * @return array|null
      */
     public function options() {
-        if($this->type() == 'select') {
+        if(in_array($this->type(), ['select', 'checkbox', 'radio'])) {
             return $this->options;
         }
 
@@ -254,7 +254,7 @@ class FormElement {
         if($options instanceof \Illuminate\Support\Collection){
             $options = $options->toArray();
         }
-        if($this->type() == 'select') {
+        if(in_array($this->type(), ['select', 'checkbox', 'radio'])) {
             $this->options = $options;
         }
 
@@ -269,7 +269,7 @@ class FormElement {
      * @return $this
      */
     public function addOption($key, $value) {
-        if($this->type() == 'select'){
+        if(in_array($this->type(), ['select', 'checkbox', 'radio'])){
             $this->options[$key] = $value;
         }
 

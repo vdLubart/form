@@ -94,7 +94,7 @@ class FormGroupTest extends TestCase {
         $form->addGroup($group);
 
         $this->assertCount(1, $group->elements());
-        $this->assertCount(0, $form->elements());
+        $this->assertCount(1, $form->elements());
         $this->assertEquals(1, $group->count());
         $this->assertEquals(1, $form->count());
     }
