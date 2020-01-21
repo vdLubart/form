@@ -247,12 +247,15 @@ class FormElement {
     /**
      * Set options to select element
      *
-     * @param array $option list of options in format key=>value
+     * @param array $options list of options in format key=>value
      * @return $this
      */
-    public function setOptions(array $option) {
+    public function setOptions($options) {
+        if($options instanceof \Illuminate\Support\Collection){
+            $options = $options->toArray();
+        }
         if($this->type() == 'select') {
-            $this->options = $option;
+            $this->options = $options;
         }
 
         return $this;

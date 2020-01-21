@@ -228,6 +228,21 @@ class Form {
      * @return array
      */
     public function elements() {
+        $elements = $this->ungroupedElements();
+
+        foreach($this->groups() as $group){
+            $elements += $group->elements();
+        }
+
+        return $elements;
+    }
+
+    /**
+     * Return form elements which are not included to any group
+     *
+     * @return array;
+     */
+    public function ungroupedElements() {
         return $this->elements;
     }
     
@@ -239,7 +254,7 @@ class Form {
      * @return FormElement
      */
     public function getElement($name) {
-        return isset($this->elements[$name])?$this->elements[$name]:null;
+        return $this->element($name);
     }
 
     /**
@@ -249,7 +264,7 @@ class Form {
      * @return FormElement
      */
     public function element($name) {
-        return isset($this->elements[$name])?$this->elements[$name]:null;
+        return isset($this->elements()[$name])?$this->elements()[$name]:null;
     }
     
     /**
@@ -487,5 +502,69 @@ class Form {
         $this->obligationMark = $mark;
 
         return $this;
+    }
+
+    /**
+     * Return form data in JSON format
+     *
+     * @return false|string
+     */
+    public function toJson() {
+        $groups = [];
+        $unGroupedElements = [];
+
+        foreach ($this->groups() as $group){
+            $gr = new \stdClass();
+            $gr->name = $group->name();
+            $gr->label = $group->label();
+            $gr->parameters = empty($group->parameters()) ? new \stdClass() : $group->parameters();
+            $grElements = [];
+
+            foreach ($group->elements() as $element){
+                $grElements[] = $this->elementToJson($element);
+            }
+
+            $gr->elements = $grElements;
+
+            $groups[] = $gr;
+        }
+
+        foreach ($this->ungroupedElements() as $element){
+            $unGroupedElements[] = $this->elementToJson($element);
+        }
+
+        $json = new \stdClass();
+        $json->action = $this->action();
+        $json->groups = $groups;
+        $json->unGrouppedElements = $unGroupedElements;
+        $json->isUploadFile = $this->files();
+        $json->method = $this->method();
+        $json->id = $this->id();
+        $json->errorBag = $this->errorBag();
+        $json->jsFile = $this->jsFile();
+        $json->js = $this->js();
+
+        return json_encode($json);
+    }
+
+    /**
+     * Build proper JSON format from the element data
+     *
+     * @param FormElement $element
+     * @return \stdClass
+     */
+    protected function elementToJson(FormElement $element) {
+        $el = new \stdClass();
+        $el->name = $element->name();
+        $el->label = $element->label();
+        $el->type = $element->type();
+        $el->value = $element->value();
+        $el->options = $element->options();
+        $el->parameters = empty($element->parameters()) ? new \stdClass() : $element->parameters();
+        $el->checked = $element->check();
+        $el->isObligatory = $element->isObligatory();
+        $el->obligationMark = $element->obligationMark();
+
+        return $el;
     }
 }
