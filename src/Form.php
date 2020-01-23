@@ -561,7 +561,7 @@ class Form {
         $el->value = $element->value();
         $el->options = $element->options();
         $el->parameters = empty($element->parameters()) ? new \stdClass() : $element->parameters();
-        $el->checked = $element->check();
+        $el->checked = $element->isChecked();
         $el->isObligatory = $element->isObligatory();
         $el->obligationMark = $element->obligationMark();
 
